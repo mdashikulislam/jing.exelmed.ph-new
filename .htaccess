@@ -55,3 +55,4 @@ RewriteRule ^(.*)$ https://jing.exelmed.ph/public/login/$1 [R,L]
   AddHandler application/x-httpd-ea-php82 .php .php8 .phtml
 </IfModule>
 # php -- END cPanel-generated handler, do not edit
+</IfModule>

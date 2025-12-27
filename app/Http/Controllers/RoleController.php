@@ -36,8 +36,8 @@ class RoleController extends Controller
         if (! auth()->user()->can('roles.view')) {
             abort(403, 'Unauthorized action.');
         }
-
         if (request()->ajax()) {
+
             $business_id = request()->session()->get('user.business_id');
 
             $roles = Role::where('business_id', $business_id)
@@ -201,6 +201,7 @@ class RoleController extends Controller
         $role = Role::where('business_id', $business_id)
                     ->with(['permissions'])
                     ->find($id);
+
         $role_permissions = [];
         foreach ($role->permissions as $role_perm) {
             $role_permissions[] = $role_perm->name;
@@ -213,7 +214,6 @@ class RoleController extends Controller
         $module_permissions = $this->moduleUtil->getModuleData('user_permissions');
 
         $common_settings = ! empty(session('business.common_settings')) ? session('business.common_settings') : [];
-
         return view('role.edit')
             ->with(compact('role', 'role_permissions', 'selling_price_groups', 'module_permissions', 'common_settings'));
     }

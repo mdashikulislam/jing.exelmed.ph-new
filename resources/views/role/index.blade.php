@@ -51,7 +51,7 @@
 @stop
 @section('javascript')
 <script type="text/javascript">
-    //Roles table
+
     $(document).ready( function(){
         var roles_table = $('#roles_table').DataTable({
                     processing: true,

@@ -2,11 +2,8 @@
     $is_mobile = isMobile();
 @endphp
 <div class="row">
-    <div
-        class="pos-form-actions tw-rounded-tr-xl tw-rounded-tl-xl tw-shadow-[rgba(17,_17,_26,_0.1)_0px_0px_16px] tw-bg-white tw-cursor-pointer">
-        <div
-            class="tw-flex tw-items-center tw-justify-between tw-flex-col sm:tw-flex-row md:tw-flex-row lg:tw-flex-row xl:tw-flex-row tw-gap-2 tw-px-4 tw-py-0 tw-overflow-x-auto tw-w-full">
-
+    <div class="pos-form-actions tw-rounded-tr-xl tw-rounded-tl-xl tw-shadow-[rgba(17,_17,_26,_0.1)_0px_0px_16px] tw-bg-white tw-cursor-pointer">
+        <div class="tw-flex tw-items-center tw-justify-between tw-flex-col sm:tw-flex-row md:tw-flex-row lg:tw-flex-row xl:tw-flex-row tw-gap-2 tw-px-4 tw-py-0 tw-overflow-x-auto tw-w-full">
             <div class="md:!tw-w-none !tw-flex md:!tw-hidden !tw-flex-row !tw-items-center !tw-gap-3">
                 <div class="tw-pos-total tw-flex tw-items-center tw-gap-3">
                     <div class="tw-text-black tw-font-bold tw-text-sm tw-flex tw-items-center tw-flex-col tw-leading-1">
@@ -14,17 +11,15 @@
                         {{-- <div>Payable:</div> --}}
                     </div>
                     <input type="hidden" name="final_total" id="final_total_input" value="0.00">
-                    <span id="total_payable" class="tw-text-green-900 tw-font-bold tw-text-sm number">0.00</span>
+                    <span id="total_payable" class="tw-text-green-900 tw-font-bold tw-text-sm number {{ auth()->user()->hasPermissionTo('hide_price') ? 'hide' : '' }}">0.00</span>
                 </div>
-                <div class="tw-pos-total tw-flex tw-items-center tw-gap-3">
+                <div class="tw-pos-total tw-flex tw-items-center tw-gap-3 {{ auth()->user()->hasPermissionTo('hide_price') ? 'hide' : '' }}">
                         <div class="tw-text-black tw-font-bold tw-text-sm tw-flex tw-items-center tw-flex-col tw-leading-1">
                             <div>Total Cost:</div>
                         </div>
-                        <span id="total_cost_p" class="total_cost_p"
-                            class="tw-text-green-900 tw-font-bold tw-text-sm number">0.00</span>
+                        <span id="total_cost_p" class="total_cost_p tw-text-green-900 tw-font-bold tw-text-sm number ">0.00</span>
                     </div>
             </div>
-
             <div class="!tw-w-full md:!tw-w-none !tw-flex md:!tw-hidden !tw-flex-row !tw-items-center !tw-gap-3">
                 @if (!Gate::check('disable_pay_checkout') || auth()->user()->can('superadmin') || auth()->user()->can('admin'))
                     <button type="button"
@@ -124,33 +119,30 @@
                 @if (!$is_mobile)
                     {{-- <div class="bg-navy pos-total text-white ">
 					<span class="text">@lang('sale.total_payable')</span>
-					<input type="hidden" name="final_total" 
+					<input type="hidden" name="final_total"
 												id="final_total_input" value=0>
 					<span id="total_payable" class="number">0</span>
 					</div> --}}
-                    <div class="pos-total md:tw-flex md:tw-items-center md:tw-gap-3 tw-hidden">
+                    <div class="pos-total md:tw-flex md:tw-items-center md:tw-gap-3 tw-hidden {{auth()->user()->hasPermissionTo('hide_price') ? 'hide' : ''}}">
                         <div
                             class="tw-text-black tw-font-bold tw-text-base md:tw-text-2xl tw-flex tw-items-center tw-flex-col">
                             <div>Total</div>
                             <div>Payable:</div>
                         </div>
                         <input type="hidden" name="final_total" id="final_total_input" value="0.00">
-                        <span id="total_payable"
-                            class="tw-text-green-900 tw-font-bold tw-text-base md:tw-text-2xl number">0.00</span>
+                        <span id="total_payable" class="tw-text-green-900 tw-font-bold tw-text-base md:tw-text-2xl number ">0.00</span>
                     </div>
-                    <div class="pos-total md:tw-flex md:tw-items-center md:tw-gap-3 tw-hidden">
+                    <div class="pos-total md:tw-flex md:tw-items-center md:tw-gap-3 tw-hidden {{ auth()->user()->hasPermissionTo('hide_price') ? 'hide' : '' }}">
                         <div
                             class="tw-text-black tw-font-bold tw-text-base md:tw-text-2xl tw-flex tw-items-center tw-flex-col">
                             <div>Total</div>
                             <div>Cost:</div>
                         </div>
-                        <span id="total_cost_p" class="total_cost_p"
-                            class="tw-text-green-900 tw-font-bold tw-text-base md:tw-text-2xl number">0.00</span>
+                        <span id="total_cost_p" class="total_cost_p tw-text-green-900 tw-font-bold tw-text-base md:tw-text-2xl number ">0.00</span>
                     </div>
                 @endif
-                
-            </div>
 
+            </div>
             <div class="tw-w-full md:tw-w-fit tw-flex tw-flex-col tw-items-end tw-gap-3 tw-hidden md:tw-block">
                 @if (!isset($pos_settings['hide_recent_trans']) || $pos_settings['hide_recent_trans'] == 0)
                     <button type="button"
@@ -159,7 +151,7 @@
                             class="fas fa-clock"></i> @lang('lang_v1.recent_transactions')</button>
                 @endif
             </div>
-        </div
+        </div>
     </div>
 </div>
 @if (isset($transaction))

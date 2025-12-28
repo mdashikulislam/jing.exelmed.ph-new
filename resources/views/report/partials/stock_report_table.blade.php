@@ -14,7 +14,11 @@
         <th>@lang('lang_v1.variation')</th>
         <th>@lang('product.category')</th>
         <th>@lang('sale.location')</th>
-        <th>@lang('Cost Price')</th>
+        @if(auth()->user()->can('stock_hide_cost'))
+            <th>&nbsp;</th>
+        @else
+            <th>@lang('Cost Price')</th>
+        @endif
         <th>@lang('purchase.unit_selling_price')</th>
         <th>@lang('report.current_stock')</th>
         @can('view_product_stock_value')

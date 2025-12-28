@@ -623,40 +623,15 @@ class ReportController extends Controller
                     }
 
                     return $variation;
-                });
-
-            // Add default_purchase_price column
-            // Show by default unless explicitly denied
-            $can_view_cost_price = true;
-            
-            $user = auth()->user();
-            $permission = \Spatie\Permission\Models\Permission::where('name', 'view_purchase_price')->first();
-            
-            if ($permission) {
-                $hasPermissionConfigured = false;
-                foreach ($user->roles as $role) {
-                    if ($role->permissions->contains('id', $permission->id)) {
-                        $hasPermissionConfigured = true;
-                        break;
-                    }
-                }
-                
-                if ($hasPermissionConfigured) {
-                    $can_view_cost_price = $user->can('view_purchase_price');
-                }
-            }
-            
-            if ($can_view_cost_price) {
-                $datatable->addColumn("default_purchase_price", function ($row) {
+                })
+                ->addColumn("default_purchase_price", function ($row) {
                     // Add default_purchase_price column
                     $default_purchase_price = $row->default_purchase_price
                         ? $row->default_purchase_price
                         : 0;
                     return "Php " . number_format($default_purchase_price, 2);
-                });
-            }
-
-            $datatable->editColumn("total_sold", function ($row) {
+                })
+                ->editColumn("total_sold", function ($row) {
                     $total_sold = 0;
                     if ($row->total_sold) {
                         $total_sold = (float) $row->total_sold;
@@ -852,34 +827,6 @@ class ReportController extends Controller
             "id"
         );
         $business_locations = BusinessLocation::forDropdown($business_id, true);
-        
-        // Check if user can view cost price
-        // Show cost price by default unless explicitly denied
-        $can_view_cost_price = true;
-        
-        // Get user's role(s)
-        $user = auth()->user();
-        
-        // Check if view_purchase_price permission exists
-        $permission = \Spatie\Permission\Models\Permission::where('name', 'view_purchase_price')->first();
-        
-        if ($permission) {
-            // Check if any of the user's roles have this permission explicitly set (either granted or denied)
-            $hasPermissionConfigured = false;
-            foreach ($user->roles as $role) {
-                // If the role has this permission configured (in role_has_permissions table)
-                if ($role->permissions->contains('id', $permission->id)) {
-                    $hasPermissionConfigured = true;
-                    break;
-                }
-            }
-            
-            // Only check permission if it's been explicitly configured for user's role
-            if ($hasPermissionConfigured) {
-                $can_view_cost_price = $user->can('view_purchase_price');
-            }
-            // Otherwise, show by default (permission not configured = show)
-        }
 
         return view("report.stock_report")->with(
             compact(
@@ -887,8 +834,7 @@ class ReportController extends Controller
                 "brands",
                 "units",
                 "business_locations",
-                "show_manufacturing_data",
-                "can_view_cost_price"
+                "show_manufacturing_data"
             )
         );
     }

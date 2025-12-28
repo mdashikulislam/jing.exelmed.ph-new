@@ -625,7 +625,8 @@ class ReportController extends Controller
                     return $variation;
                 });
 
-            // Add default_purchase_price column only if user can view cost price
+            // Add default_purchase_price column only if user doesn't have stock_hide_cost permission
+            // If user has 'stock_hide_cost' permission, the column is hidden
             if (!auth()->user()->can('stock_hide_cost')) {
                 $datatable->addColumn("default_purchase_price", function ($row) {
                     // Add default_purchase_price column
@@ -834,6 +835,8 @@ class ReportController extends Controller
         $business_locations = BusinessLocation::forDropdown($business_id, true);
         
         // Check if user can view cost price
+        // If user has 'stock_hide_cost' permission, hide the cost price
+        // Otherwise, show it by default
         $can_view_cost_price = !auth()->user()->can('stock_hide_cost');
 
         return view("report.stock_report")->with(

@@ -625,9 +625,14 @@ class ReportController extends Controller
                     return $variation;
                 });
 
-            // Add default_purchase_price column only if user doesn't have stock_hide_cost permission
-            // If user has 'stock_hide_cost' permission, the column is hidden
-            if (!auth()->user()->can('stock_hide_cost')) {
+            // Add default_purchase_price column
+            // Show by default unless explicitly restricted by permission
+            $can_view_cost_price = true;
+            if (\Spatie\Permission\Models\Permission::where('name', 'view_purchase_price')->exists()) {
+                $can_view_cost_price = auth()->user()->can('view_purchase_price');
+            }
+            
+            if ($can_view_cost_price) {
                 $datatable->addColumn("default_purchase_price", function ($row) {
                     // Add default_purchase_price column
                     $default_purchase_price = $row->default_purchase_price
@@ -835,9 +840,14 @@ class ReportController extends Controller
         $business_locations = BusinessLocation::forDropdown($business_id, true);
         
         // Check if user can view cost price
-        // If user has 'stock_hide_cost' permission, hide the cost price
-        // Otherwise, show it by default
-        $can_view_cost_price = !auth()->user()->can('stock_hide_cost');
+        // Show by default (true) unless explicitly restricted
+        // Check if the permission exists and if user has it
+        $can_view_cost_price = true; // Default to showing
+        
+        // If view_purchase_price permission exists, check if user has it
+        if (\Spatie\Permission\Models\Permission::where('name', 'view_purchase_price')->exists()) {
+            $can_view_cost_price = auth()->user()->can('view_purchase_price');
+        }
 
         return view("report.stock_report")->with(
             compact(

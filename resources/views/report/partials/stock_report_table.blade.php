@@ -14,7 +14,9 @@
             <th>@lang('lang_v1.variation')</th>
             <th>@lang('product.category')</th>
             <th>@lang('sale.location')</th>
-            <th>@lang('Cost Price')</th>
+            @if(!empty($can_view_cost_price))
+            <th class="default_purchase_price">@lang('Cost Price')</th>
+            @endif
             <th>@lang('purchase.unit_selling_price')</th>
             <th>@lang('report.current_stock')</th>
             @can('view_product_stock_value')
@@ -36,7 +38,7 @@
     </thead>
     <tfoot>
         <tr class="bg-gray font-17 text-center footer-total">
-            <td colspan="8"><strong>@lang('sale.total'):</strong></td>
+            <td colspan="{{ !empty($can_view_cost_price) ? 8 : 7 }}"><strong>@lang('sale.total'):</strong></td>
             <td class="footer_total_stock"></td>
             @can('view_product_stock_value')
             <td class="footer_total_stock_price"></td>

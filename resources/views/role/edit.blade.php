@@ -1425,6 +1425,14 @@
               </label>
             </div>
           </div>
+            <div class="col-md-12">
+                <div class="checkbox">
+                    <label>
+                        {!! Form::checkbox('permissions[]', 'stock_hide_cost', in_array('stock_hide_cost', $role_permissions),
+                        [ 'class' => 'input-icheck']); !!} {{ __( 'lang_v1.hide_product_stock_cost' ) }}
+                    </label>
+                </div>
+            </div>
         </div>
         </div>
         <hr>

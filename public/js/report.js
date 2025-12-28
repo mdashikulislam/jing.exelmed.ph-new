@@ -106,10 +106,15 @@ $(document).ready(function() {
             { data: 'variation', name: 'variation' },
             { data: 'category_name', name: 'c.name' },
             { data: 'location_name', name: 'l.name' },
-            { data: 'default_purchase_price', name: 'default_purchase_price' },
-            { data: 'unit_price', name: 'variations.sell_price_inc_tax' },
-            { data: 'stock', name: 'stock', searchable: false },
         ];
+        
+        // Add default_purchase_price column only if user can view cost price
+        if ($('th.default_purchase_price').length) {
+            stock_report_cols.push({ data: 'default_purchase_price', name: 'default_purchase_price' });
+        }
+        
+        stock_report_cols.push({ data: 'unit_price', name: 'variations.sell_price_inc_tax' });
+        stock_report_cols.push({ data: 'stock', name: 'stock', searchable: false });
         if ($('th.stock_price').length) {
             stock_report_cols.push({ data: 'stock_price', name: 'stock_price', searchable: false });
             stock_report_cols.push({ data: 'stock_value_by_sale_price', name: 'stock_value_by_sale_price', searchable: false, orderable: false });

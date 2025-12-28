@@ -1093,6 +1093,7 @@ return [
     'recur_details' => 'Recurring details',
     'recurring' => 'Recurring',
     'view_product_stock_value' => 'View product stock value',
+    'hide_product_stock_cost' => 'Hide Stock Cost',
     'added' => 'Added',
     'disable_credit_sale_button' => 'Disable credit sale button',
     'pay' => 'Pay',

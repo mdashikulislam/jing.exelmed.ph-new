@@ -4,7 +4,7 @@
 			<tr>
 				<td><b class="tw-text-base md:tw-text-lg tw-font-bold">@lang('sale.item'):</b>&nbsp;
 					<span class="total_quantity tw-text-base md:tw-text-lg tw-font-semibold">0</span></td>
-				<td>
+				<td @if(auth()->user()->hasPermissionTo('hide_price')) class="hide" @endif>
 					<b class="tw-text-base md:tw-text-lg tw-font-bold">@lang('sale.total'):</b> &nbsp;
 					<span class="price_total tw-text-base md:tw-text-lg tw-font-semibold">0</span>
 				</td>

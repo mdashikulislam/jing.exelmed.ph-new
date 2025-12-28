@@ -623,15 +623,20 @@ class ReportController extends Controller
                     }
 
                     return $variation;
-                })
-                ->addColumn("default_purchase_price", function ($row) {
+                });
+
+            // Add default_purchase_price column only if user can view cost price
+            if (!auth()->user()->can('stock_hide_cost')) {
+                $datatable->addColumn("default_purchase_price", function ($row) {
                     // Add default_purchase_price column
                     $default_purchase_price = $row->default_purchase_price
                         ? $row->default_purchase_price
                         : 0;
                     return "Php " . number_format($default_purchase_price, 2);
-                })
-                ->editColumn("total_sold", function ($row) {
+                });
+            }
+
+            $datatable->editColumn("total_sold", function ($row) {
                     $total_sold = 0;
                     if ($row->total_sold) {
                         $total_sold = (float) $row->total_sold;
@@ -827,6 +832,9 @@ class ReportController extends Controller
             "id"
         );
         $business_locations = BusinessLocation::forDropdown($business_id, true);
+        
+        // Check if user can view cost price
+        $can_view_cost_price = !auth()->user()->can('stock_hide_cost');
 
         return view("report.stock_report")->with(
             compact(
@@ -834,7 +842,8 @@ class ReportController extends Controller
                 "brands",
                 "units",
                 "business_locations",
-                "show_manufacturing_data"
+                "show_manufacturing_data",
+                "can_view_cost_price"
             )
         );
     }

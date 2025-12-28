@@ -86,7 +86,7 @@
     <div class="row">
         <div class="col-md-12">
             @component('components.widget', ['class' => 'box-solid'])
-                @include('report.partials.stock_report_table')
+                @include('report.partials.stock_report_table', ['can_view_cost_price' => $can_view_cost_price ?? false, 'show_manufacturing_data' => $show_manufacturing_data ?? false])
             @endcomponent
         </div>
     </div>
@@ -96,5 +96,8 @@
 @endsection
 
 @section('javascript')
+    <script type="text/javascript">
+        var can_view_cost_price = {{ !empty($can_view_cost_price) ? 'true' : 'false' }};
+    </script>
     <script src="{{ asset('js/report.js?v=' . $asset_v) }}"></script>
 @endsection

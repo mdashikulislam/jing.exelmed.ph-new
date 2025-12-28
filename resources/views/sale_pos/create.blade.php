@@ -107,6 +107,16 @@
             @endif
         @endforeach
     @endif
+    @if(auth()->user()->hasPermissionTo('hide_price'))
+    <style>
+        .hide-price-mode .pos_unit_price_inc_tax,
+        .hide-price-mode .pos_line_total_text,
+        .hide-price-mode .pos_line_total,
+        .hide-price-mode .price_total {
+            visibility: hidden !important;
+        }
+    </style>
+    @endif
 @stop
 @section('javascript')
     <script>

@@ -112,7 +112,14 @@
         .hide-price-mode .pos_unit_price_inc_tax,
         .hide-price-mode .pos_line_total_text,
         .hide-price-mode .pos_line_total,
-        .hide-price-mode .price_total {
+        .hide-price-mode .price_total,
+        .hide-price-mode span#total_payable,
+        .hide-price-mode .total_payable_span,
+        .hide-price-mode .total_cost_p,
+        .hide-price-mode .total_paying,
+        .hide-price-mode .balance_due,
+        .hide-price-mode .change_return_span,
+        .hide-price-mode .default_purchase_price_p {
             visibility: hidden !important;
         }
     </style>
@@ -120,9 +127,12 @@
 @stop
 @section('javascript')
     <script>
-        const hidePrice = parseInt('{{auth()->user()->hasPermissionTo('hide_price')}}');
+        const hidePrice = @json(auth()->user()->hasPermissionTo('hide_price') ? 1 : 0);
+        if (hidePrice) {
+            document.body.classList.add('hide-price-mode');
+        }
     </script>
-    <script src="{{ asset('js/pos.js?v=' . $asset_v) }}"></script>
+    <script src="{{ asset('js/pos.js?v=' . time()) }}"></script>
     <script src="{{ asset('js/printer.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>

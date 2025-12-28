@@ -626,12 +626,24 @@ class ReportController extends Controller
                 });
 
             // Add default_purchase_price column
-            // By default, show cost price (true)
-            // Only hide if 'view_purchase_price' permission exists AND user doesn't have it
+            // Show by default unless explicitly denied
             $can_view_cost_price = true;
             
-            if (\Spatie\Permission\Models\Permission::where('name', 'view_purchase_price')->exists()) {
-                $can_view_cost_price = auth()->user()->can('view_purchase_price');
+            $user = auth()->user();
+            $permission = \Spatie\Permission\Models\Permission::where('name', 'view_purchase_price')->first();
+            
+            if ($permission) {
+                $hasPermissionConfigured = false;
+                foreach ($user->roles as $role) {
+                    if ($role->permissions->contains('id', $permission->id)) {
+                        $hasPermissionConfigured = true;
+                        break;
+                    }
+                }
+                
+                if ($hasPermissionConfigured) {
+                    $can_view_cost_price = $user->can('view_purchase_price');
+                }
             }
             
             if ($can_view_cost_price) {
@@ -842,17 +854,32 @@ class ReportController extends Controller
         $business_locations = BusinessLocation::forDropdown($business_id, true);
         
         // Check if user can view cost price
-        // By default, show cost price (true)
-        // Only hide if 'view_purchase_price' permission exists AND user doesn't have it
+        // Show cost price by default unless explicitly denied
         $can_view_cost_price = true;
         
-        // Check if the permission exists in the system
-        if (\Spatie\Permission\Models\Permission::where('name', 'view_purchase_price')->exists()) {
-            // If permission exists, check if user has it
-            // If user doesn't have it, hide the cost price
-            $can_view_cost_price = auth()->user()->can('view_purchase_price');
+        // Get user's role(s)
+        $user = auth()->user();
+        
+        // Check if view_purchase_price permission exists
+        $permission = \Spatie\Permission\Models\Permission::where('name', 'view_purchase_price')->first();
+        
+        if ($permission) {
+            // Check if any of the user's roles have this permission explicitly set (either granted or denied)
+            $hasPermissionConfigured = false;
+            foreach ($user->roles as $role) {
+                // If the role has this permission configured (in role_has_permissions table)
+                if ($role->permissions->contains('id', $permission->id)) {
+                    $hasPermissionConfigured = true;
+                    break;
+                }
+            }
+            
+            // Only check permission if it's been explicitly configured for user's role
+            if ($hasPermissionConfigured) {
+                $can_view_cost_price = $user->can('view_purchase_price');
+            }
+            // Otherwise, show by default (permission not configured = show)
         }
-        // If permission doesn't exist, show cost price by default
 
         return view("report.stock_report")->with(
             compact(

@@ -102,6 +102,7 @@
 @section('javascript')
     <script>
         window.showCost = @json($showPrice);
+console.log(window.showCost, 'showCost');
     </script>
     <script src="{{ asset('js/report.js?v=' . $asset_v) }}"></script>
 @endsection

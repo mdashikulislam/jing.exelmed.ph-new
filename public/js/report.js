@@ -1,3 +1,4 @@
+
 $(document).ready(function() {
     //Purchase & Sell report
     //Date range as a button
@@ -106,7 +107,7 @@ $(document).ready(function() {
         { data: 'variation', name: 'variation' },
         { data: 'category_name', name: 'c.name' },
         { data: 'location_name', name: 'l.name' },
-        { data: 'default_purchase_price', name: 'default_purchase_price' },
+        { data: 'default_purchase_price', name: 'default_purchase_price', visible: window.showCost },
         { data: 'unit_price', name: 'variations.sell_price_inc_tax' },
         { data: 'stock', name: 'stock', searchable: false },
     ];

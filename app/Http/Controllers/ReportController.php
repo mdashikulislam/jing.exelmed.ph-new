@@ -567,7 +567,6 @@ class ReportController extends Controller
                     compact("product_stock_details")
                 );
             }
-
             $datatable = Datatables::of($products)
                 ->editColumn("stock", function ($row) {
                     if ($row->enable_stock) {
@@ -625,10 +624,7 @@ class ReportController extends Controller
                     return $variation;
                 })
                 ->addColumn("default_purchase_price", function ($row) {
-                    // If user has permission to hide stock cost, return empty value
-                    if (auth()->user()->can('stock_hide_cost')) {
-                        return '';
-                    }
+
 
                     // Add default_purchase_price column
                     $default_purchase_price = $row->default_purchase_price

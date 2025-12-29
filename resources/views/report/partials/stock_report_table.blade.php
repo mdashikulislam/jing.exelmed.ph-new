@@ -4,6 +4,7 @@
     $product_custom_field2 = !empty($custom_labels['product']['custom_field_2']) ? $custom_labels['product']['custom_field_2'] : __('lang_v1.product_custom_field2');
     $product_custom_field3 = !empty($custom_labels['product']['custom_field_3']) ? $custom_labels['product']['custom_field_3'] : __('lang_v1.product_custom_field3');
     $product_custom_field4 = !empty($custom_labels['product']['custom_field_4']) ? $custom_labels['product']['custom_field_4'] : __('lang_v1.product_custom_field4');
+
 @endphp
 <table class="table table-bordered table-striped" id="stock_report_table">
     <thead>
@@ -14,11 +15,7 @@
         <th>@lang('lang_v1.variation')</th>
         <th>@lang('product.category')</th>
         <th>@lang('sale.location')</th>
-        @if(auth()->user()->can('stock_hide_cost'))
-            <th>&nbsp;</th>
-        @else
-            <th>@lang('Cost Price')</th>
-        @endif
+        <th>@lang('Cost Price')</th>
         <th>@lang('purchase.unit_selling_price')</th>
         <th>@lang('report.current_stock')</th>
         @can('view_product_stock_value')

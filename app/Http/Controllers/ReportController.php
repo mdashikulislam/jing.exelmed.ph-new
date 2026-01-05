@@ -2915,6 +2915,7 @@ class ReportController extends Controller
      */
     public function getproductSellReport(Request $request)
     {
+
         if (
             !auth()
                 ->user()
@@ -2952,6 +2953,30 @@ class ReportController extends Controller
                 "t.id"
             )
                 ->join(
+                    "transaction_sell_lines_purchase_lines as tspl",
+                    "transaction_sell_lines.id",
+                    "=",
+                    "tspl.sell_line_id"
+                )
+                ->join(
+                    "purchase_lines as pl",
+                    "tspl.purchase_line_id",
+                    "=",
+                    "pl.id"
+                )
+                ->join(
+                    "transactions as purchase",
+                    "pl.transaction_id",
+                    "=",
+                    "purchase.id"
+                )
+                ->leftjoin(
+                    "contacts as supplier",
+                    "purchase.contact_id",
+                    "=",
+                    "supplier.id"
+                )
+                ->join(
                     "variations as v",
                     "transaction_sell_lines.variation_id",
                     "=",
@@ -2963,6 +2988,7 @@ class ReportController extends Controller
                     "=",
                     "pv.id"
                 )
+                ->leftjoin("contacts as c", "t.contact_id", "=", "c.id")
                 ->join("products as p", "pv.product_id", "=", "p.id")
                 ->leftjoin("units as u", "p.unit_id", "=", "u.id")
                 ->where("t.business_id", $business_id)
@@ -3108,8 +3134,216 @@ class ReportController extends Controller
                 ])
                 ->make(true);
         }
-    }
+        $business_locations = BusinessLocation::forDropdown($business_id);
+        $customers = Contact::customersDropdown($business_id);
+        $categories = Category::forDropdown($business_id, 'product');
+        $brands = Brands::forDropdown($business_id);
+        $customer_group = CustomerGroup::forDropdown($business_id, false, true);
 
+        return view('report.product_sell_report')
+            ->with(compact('business_locations', 'customers', 'categories', 'brands',
+                'customer_group', 'product_custom_field1', 'product_custom_field2'));
+    }
+    public function getproductSellReportWithPurchase(Request $request)
+    {
+        if (
+            !auth()
+                ->user()
+                ->can("purchase_n_sell_report.view")
+        ) {
+            abort(403, "Unauthorized action.");
+        }
+
+        $business_id = $request->session()->get("user.business_id");
+        if ($request->ajax()) {
+            $variation_id = $request->get("variation_id", null);
+            $query = TransactionSellLine::join(
+                "transactions as t",
+                "transaction_sell_lines.transaction_id",
+                "=",
+                "t.id"
+            )
+                ->join(
+                    "transaction_sell_lines_purchase_lines as tspl",
+                    "transaction_sell_lines.id",
+                    "=",
+                    "tspl.sell_line_id"
+                )
+                ->join(
+                    "purchase_lines as pl",
+                    "tspl.purchase_line_id",
+                    "=",
+                    "pl.id"
+                )
+                ->join(
+                    "transactions as purchase",
+                    "pl.transaction_id",
+                    "=",
+                    "purchase.id"
+                )
+                ->leftjoin(
+                    "contacts as supplier",
+                    "purchase.contact_id",
+                    "=",
+                    "supplier.id"
+                )
+                ->join(
+                    "variations as v",
+                    "transaction_sell_lines.variation_id",
+                    "=",
+                    "v.id"
+                )
+                ->join(
+                    "product_variations as pv",
+                    "v.product_variation_id",
+                    "=",
+                    "pv.id"
+                )
+                ->leftjoin("contacts as c", "t.contact_id", "=", "c.id")
+                ->join("products as p", "pv.product_id", "=", "p.id")
+                ->leftjoin("units as u", "p.unit_id", "=", "u.id")
+                ->where("t.business_id", $business_id)
+                ->where("t.type", "sell")
+                ->where("t.status", "final")
+                ->select(
+                    "p.name as product_name",
+                    "p.type as product_type",
+                    "pv.name as product_variation",
+                    "v.name as variation_name",
+                    "v.sub_sku",
+                    "c.name as customer",
+                    "c.supplier_business_name",
+                    "t.id as transaction_id",
+                    "t.invoice_no",
+                    "t.transaction_date as transaction_date",
+                    "tspl.quantity as purchase_quantity",
+                    "u.short_name as unit",
+                    "supplier.name as supplier_name",
+                    "purchase.ref_no as ref_no",
+                    "purchase.type as purchase_type",
+                    "pl.lot_number"
+                );
+
+            if (!empty($variation_id)) {
+                $query->where(
+                    "transaction_sell_lines.variation_id",
+                    $variation_id
+                );
+            }
+            $start_date = $request->get("start_date");
+            $end_date = $request->get("end_date");
+            if (!empty($start_date) && !empty($end_date)) {
+                $query
+                    ->where("t.transaction_date", ">=", $start_date)
+                    ->where("t.transaction_date", "<=", $end_date);
+            }
+
+            $permitted_locations = auth()
+                ->user()
+                ->permitted_locations();
+            if ($permitted_locations != "all") {
+                $query->whereIn("t.location_id", $permitted_locations);
+            }
+
+            $location_id = $request->get("location_id", null);
+            if (!empty($location_id)) {
+                $query->where("t.location_id", $location_id);
+            }
+
+            $customer_id = $request->get("customer_id", null);
+            if (!empty($customer_id)) {
+                $query->where("t.contact_id", $customer_id);
+            }
+            $customer_group_id = $request->get("customer_group_id", null);
+            if (!empty($customer_group_id)) {
+                $query
+                    ->leftjoin(
+                        "customer_groups AS CG",
+                        "c.customer_group_id",
+                        "=",
+                        "CG.id"
+                    )
+                    ->where("CG.id", $customer_group_id);
+            }
+
+            $category_id = $request->get("category_id", null);
+            if (!empty($category_id)) {
+                $query->where("p.category_id", $category_id);
+            }
+
+            $brand_id = $request->get("brand_id", null);
+            if (!empty($brand_id)) {
+                $query->where("p.brand_id", $brand_id);
+            }
+
+            return Datatables::of($query)
+                ->editColumn("product_name", function ($row) {
+                    $product_name = $row->product_name;
+                    if ($row->product_type == "variable") {
+                        $product_name .=
+                            " - " .
+                            $row->product_variation .
+                            " - " .
+                            $row->variation_name;
+                    }
+
+                    return $product_name;
+                })
+                ->editColumn("invoice_no", function ($row) {
+                    return '<a data-href="' .
+                        action(
+                            [
+                                \App\Http\Controllers\SellController::class,
+                                "show",
+                            ],
+                            [$row->transaction_id]
+                        ) .
+                        '" href="#" data-container=".view_modal" class="btn-modal">' .
+                        $row->invoice_no .
+                        "</a>";
+                })
+                ->editColumn(
+                    "transaction_date",
+                    '{{@format_datetime($transaction_date)}}'
+                )
+                ->editColumn("unit_sale_price", function ($row) {
+                    return '<span class="display_currency" data-currency_symbol = true>' .
+                        $row->unit_sale_price .
+                        "</span>";
+                })
+                ->editColumn("purchase_quantity", function ($row) {
+                    return '<span data-is_quantity="true" class="display_currency purchase_quantity" data-currency_symbol=false data-orig-value="' .
+                        (float) $row->purchase_quantity .
+                        '" data-unit="' .
+                        $row->unit .
+                        '" >' .
+                        (float) $row->purchase_quantity .
+                        "</span> " .
+                        $row->unit;
+                })
+                ->editColumn(
+                    "ref_no",
+                    '
+                    @if($purchase_type == "opening_stock")
+                        <i><small class="help-block">(@lang("lang_v1.opening_stock"))</small></i>
+                    @else
+                        {{$ref_no}}
+                    @endif
+                    '
+                )
+                ->editColumn(
+                    "customer",
+                    '@if(!empty($supplier_business_name)) {{$supplier_business_name}},<br>@endif {{$customer}}'
+                )
+                ->rawColumns([
+                    "invoice_no",
+                    "purchase_quantity",
+                    "ref_no",
+                    "customer",
+                ])
+                ->make(true);
+        }
+    }
     /**
      * Shows product lot report
      *
@@ -3341,6 +3575,13 @@ class ReportController extends Controller
         }
 
         $business_id = $request->session()->get("user.business_id");
+
+        $payment_types = $this->transactionUtil->payment_types(
+            null,
+            true,
+            $business_id
+        );
+
         if ($request->ajax()) {
             $supplier_id = $request->get("supplier_id", null);
             $contact_filter1 = !empty($supplier_id)

@@ -4408,6 +4408,7 @@ class ReportController extends Controller
 
             $query->groupBy("v.id")->groupBy("formated_date");
 
+            $variation_id = $request->get("variation_id");
             if (!empty($variation_id)) {
                 $query->where(
                     "transaction_sell_lines.variation_id",
@@ -4441,6 +4442,12 @@ class ReportController extends Controller
             $customer_group_id = $request->get("customer_group_id", null);
             if (!empty($customer_group_id)) {
                 $query
+                    ->leftjoin(
+                        "contacts AS c",
+                        "t.contact_id",
+                        "=",
+                        "c.id"
+                    )
                     ->leftjoin(
                         "customer_groups AS CG",
                         "c.customer_group_id",
@@ -5392,6 +5399,7 @@ class ReportController extends Controller
                     "selling_price",
                     "quantity",
                     "purchase_price",
+                    "purchase_ref_no",
                     "sale_invoice_no",
                     "supplier",
                     "customer",

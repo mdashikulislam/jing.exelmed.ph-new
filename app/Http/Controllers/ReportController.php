@@ -4524,12 +4524,22 @@ class ReportController extends Controller
             })
             ->filterColumn('brand_name', function ($query, $keyword) {
                 $query->where('b.name', 'like', ["%{$keyword}%"]);
-            })
-            ->rawColumns([
+            });
+            
+            // Add conditional rawColumns based on group_by parameter
+            $rawColumns = [
                 "current_stock",
                 "subtotal",
                 "total_qty_sold",
-            ]);
+            ];
+            
+            if ($group_by == 'category') {
+                $rawColumns[] = 'category_name';
+            } elseif ($group_by == 'brand') {
+                $rawColumns[] = 'brand_name';
+            }
+            
+            $datatable->rawColumns($rawColumns);
 
             return $datatable->make(true);
         }

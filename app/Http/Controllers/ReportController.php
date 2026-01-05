@@ -3012,6 +3012,7 @@ class ReportController extends Controller
                     "tspl.quantity as purchase_quantity",
                     "u.short_name as unit",
                     "supplier.name as supplier_name",
+                    "purchase.id as purchase_id",
                     "purchase.ref_no as ref_no",
                     "purchase.type as purchase_type",
                     "pl.lot_number"

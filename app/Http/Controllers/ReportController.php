@@ -2749,6 +2749,12 @@ class ReportController extends Controller
                 )
                 ->join("contacts as c", "t.contact_id", "=", "c.id")
                 ->join("products as p", "pv.product_id", "=", "p.id")
+                ->leftjoin(
+                    "tax_rates as tr",
+                    "purchase_lines.tax_id",
+                    "=",
+                    "tr.id"
+                )
                 ->leftjoin("units as u", "p.unit_id", "=", "u.id")
                 ->where("t.business_id", $business_id)
                 ->where("t.type", "purchase")

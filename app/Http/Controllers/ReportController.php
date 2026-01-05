@@ -4362,8 +4362,16 @@ class ReportController extends Controller
                     "=",
                     "pv.id"
                 )
-                ->join("products as p", "pv.product_id", "=", "p.id")
-                ->leftjoin("units as u", "p.unit_id", "=", "u.id")
+                ->join("products as p", "pv.product_id", "=", "p.id");
+
+            // Add category or brand join based on group_by parameter
+            if ($group_by == 'category') {
+                $query->leftjoin("categories as cat", "p.category_id", "=", "cat.id");
+            } elseif ($group_by == 'brand') {
+                $query->leftjoin("brands as b", "p.brand_id", "=", "b.id");
+            }
+
+            $query->leftjoin("units as u", "p.unit_id", "=", "u.id")
                 ->where("t.business_id", $business_id)
                 ->where("t.type", "sell")
                 ->where("t.status", "final")
@@ -4389,9 +4397,16 @@ class ReportController extends Controller
                     DB::raw(
                         "SUM((transaction_sell_lines.quantity - transaction_sell_lines.quantity_returned) * transaction_sell_lines.unit_price_inc_tax) as subtotal"
                     )
-                )
-                ->groupBy("v.id")
-                ->groupBy("formated_date");
+                );
+
+            // Add category or brand name to select based on group_by parameter
+            if ($group_by == 'category') {
+                $query->addSelect("cat.name as category_name");
+            } elseif ($group_by == 'brand') {
+                $query->addSelect("b.name as brand_name");
+            }
+
+            $query->groupBy("v.id")->groupBy("formated_date");
 
             if (!empty($variation_id)) {
                 $query->where(

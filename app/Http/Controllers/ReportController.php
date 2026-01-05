@@ -4460,61 +4460,78 @@ class ReportController extends Controller
                 $query->where("p.brand_id", $brand_id);
             }
 
-            return Datatables::of($query)
-                ->editColumn("product_name", function ($row) {
-                    $product_name = $row->product_name;
-                    if ($row->product_type == "variable") {
-                        $product_name .=
-                            " - " .
-                            $row->product_variation .
-                            " - " .
-                            $row->variation_name;
-                    }
+            $datatable = Datatables::of($query);
 
-                    return $product_name;
-                })
-                ->editColumn(
-                    "transaction_date",
-                    '{{@format_datetime($formated_date)}}'
-                )
-                ->editColumn("total_qty_sold", function ($row) {
-                    return '<span data-is_quantity="true" class="display_currency sell_qty" data-currency_symbol=false data-orig-value="' .
-                        (float) $row->total_qty_sold .
-                        '" data-unit="' .
-                        $row->unit .
-                        '" >' .
-                        (float) $row->total_qty_sold .
-                        "</span> " .
-                        $row->unit;
-                })
-                ->editColumn("current_stock", function ($row) {
-                    return '<span data-is_quantity="true" class="display_currency current_stock" data-currency_symbol=false data-orig-value="' .
-                        (float) $row->current_stock .
-                        '" data-unit="">' .
-                        (float) $row->current_stock .
-                        "</span> ";
-                })
-                ->editColumn("subtotal", function ($row) {
-                    $class = is_null($row->parent_sell_line_id)
-                        ? "row_subtotal"
-                        : "";
+            // Add edit column based on group_by parameter
+            if ($group_by == 'category') {
+                $datatable->editColumn('category_name', function ($row) {
+                    return $row->category_name ?? '';
+                });
+            } elseif ($group_by == 'brand') {
+                $datatable->editColumn('brand_name', function ($row) {
+                    return $row->brand_name ?? '';
+                });
+            }
 
-                    return '<span class="' .
-                        $class .
-                        '" data-orig-value="' .
-                        $row->subtotal .
-                        '">' .
-                        $this->transactionUtil->num_f($row->subtotal, true) .
-                        "</span>";
-                })
+            $datatable->editColumn("product_name", function ($row) {
+                $product_name = $row->product_name;
+                if ($row->product_type == "variable") {
+                    $product_name .=
+                        " - " .
+                        $row->product_variation .
+                        " - " .
+                        $row->variation_name;
+                }
 
-                ->rawColumns([
-                    "current_stock",
-                    "subtotal",
-                    "total_qty_sold",
-                    "category_name",
-                ])
-                ->make(true);
+                return $product_name;
+            })
+            ->editColumn(
+                "transaction_date",
+                '{{@format_datetime($formated_date)}}'
+            )
+            ->editColumn("total_qty_sold", function ($row) {
+                return '<span data-is_quantity="true" class="display_currency sell_qty" data-currency_symbol=false data-orig-value="' .
+                    (float) $row->total_qty_sold .
+                    '" data-unit="' .
+                    $row->unit .
+                    '" >' .
+                    (float) $row->total_qty_sold .
+                    "</span> " .
+                    $row->unit;
+            })
+            ->editColumn("current_stock", function ($row) {
+                return '<span data-is_quantity="true" class="display_currency current_stock" data-currency_symbol=false data-orig-value="' .
+                    (float) $row->current_stock .
+                    '" data-unit="">' .
+                    (float) $row->current_stock .
+                    "</span> ";
+            })
+            ->editColumn("subtotal", function ($row) {
+                $class = is_null($row->parent_sell_line_id)
+                    ? "row_subtotal"
+                    : "";
+
+                return '<span class="' .
+                    $class .
+                    '" data-orig-value="' .
+                    $row->subtotal .
+                    '">' .
+                    $this->transactionUtil->num_f($row->subtotal, true) .
+                    "</span>";
+            })
+            ->filterColumn('category_name', function ($query, $keyword) {
+                $query->where('cat.name', 'like', ["%{$keyword}%"]);
+            })
+            ->filterColumn('brand_name', function ($query, $keyword) {
+                $query->where('b.name', 'like', ["%{$keyword}%"]);
+            })
+            ->rawColumns([
+                "current_stock",
+                "subtotal",
+                "total_qty_sold",
+            ]);
+
+            return $datatable->make(true);
         }
     }
 

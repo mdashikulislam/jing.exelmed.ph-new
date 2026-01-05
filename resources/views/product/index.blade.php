@@ -226,6 +226,8 @@
     <script src="{{ asset('js/product.js?v=' . $asset_v) }}"></script>
     <script src="{{ asset('js/opening_stock.js?v=' . $asset_v) }}"></script>
     <script type="text/javascript">
+        const showCost = @json(!auth()->user()->hasPermissionTo('stock_hide_cost'));
+        console.log(showCost);
         $(document).ready(function() {
             product_table = $('#product_table').DataTable({
                 processing: true,
@@ -646,6 +648,7 @@
                         {
                             data: 'default_purchase_price',
                             name: 'default_purchase_price',
+                            visible:showCost
                         },
                         {
                             data: 'unit_price',

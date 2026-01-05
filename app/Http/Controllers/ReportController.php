@@ -3009,13 +3009,26 @@ class ReportController extends Controller
                     "t.id as transaction_id",
                     "t.invoice_no",
                     "t.transaction_date as transaction_date",
+                    DB::raw(
+                        "(transaction_sell_lines.quantity - transaction_sell_lines.quantity_returned) as sell_qty"
+                    ),
+                    "transaction_sell_lines.unit_price_before_discount as unit_price",
+                    "transaction_sell_lines.line_discount_amount as discount_amount",
+                    "transaction_sell_lines.line_discount_type as discount_type",
+                    "transaction_sell_lines.item_tax as tax",
+                    "transaction_sell_lines.tax_id",
+                    "transaction_sell_lines.unit_price_inc_tax as unit_sale_price",
+                    DB::raw(
+                        "((transaction_sell_lines.quantity - transaction_sell_lines.quantity_returned) * transaction_sell_lines.unit_price_inc_tax) as subtotal"
+                    ),
                     "tspl.quantity as purchase_quantity",
                     "u.short_name as unit",
                     "supplier.name as supplier_name",
                     "purchase.id as purchase_id",
                     "purchase.ref_no as ref_no",
                     "purchase.type as purchase_type",
-                    "pl.lot_number"
+                    "pl.lot_number",
+                    "transaction_sell_lines.id as sell_line_id"
                 );
 
             if (!empty($variation_id)) {
@@ -3098,39 +3111,77 @@ class ReportController extends Controller
                     "transaction_date",
                     '{{@format_datetime($transaction_date)}}'
                 )
+                ->editColumn("sell_qty", function ($row) {
+                    return '<span data-is_quantity="true" class="display_currency sell_qty" data-currency_symbol=false data-orig-value="' .
+                        (float) $row->sell_qty .
+                        '" data-unit="' .
+                        $row->unit .
+                        '" >' .
+                        (float) $row->sell_qty .
+                        "</span> " .
+                        $row->unit;
+                })
+                ->editColumn("unit_price", function ($row) {
+                    return '<span class="display_currency" data-orig-value="' .
+                        $row->unit_price .
+                        '" data-currency_symbol=true>' .
+                        $row->unit_price .
+                        "</span>";
+                })
+                ->editColumn("discount_amount", function ($row) {
+                    return '<span class="display_currency" data-orig-value="' .
+                        $row->discount_amount .
+                        '" data-currency_symbol=true>' .
+                        $row->discount_amount .
+                        "</span>";
+                })
+                ->editColumn("tax", function ($row) {
+                    return '<span class="tax" data-orig-value="' .
+                        $row->tax .
+                        '" data-currency_symbol=true>' .
+                        $this->transactionUtil->num_f($row->tax, true) .
+                        "</span>";
+                })
                 ->editColumn("unit_sale_price", function ($row) {
                     return '<span class="display_currency" data-currency_symbol = true>' .
                         $row->unit_sale_price .
                         "</span>";
                 })
-                ->editColumn("purchase_quantity", function ($row) {
-                    return '<span data-is_quantity="true" class="display_currency purchase_quantity" data-currency_symbol=false data-orig-value="' .
-                        (float) $row->purchase_quantity .
-                        '" data-unit="' .
-                        $row->unit .
-                        '" >' .
-                        (float) $row->purchase_quantity .
-                        "</span> " .
-                        $row->unit;
+                ->editColumn("subtotal", function ($row) {
+                    return '<span class="display_currency row_subtotal" data-orig-value="' .
+                        $row->subtotal .
+                        '" data-currency_symbol=true>' .
+                        $row->subtotal .
+                        "</span>";
                 })
-                ->editColumn(
-                    "ref_no",
-                    '
-                    @if($purchase_type == "purchase")
-                        <a data-href="{{action(\'App\Http\Controllers\PurchaseController@show\', [$purchase_id])}}" class="btn-modal" data-container=".view_modal">{{$ref_no}}</a>
-                    @elseif($purchase_type == "opening_stock")
-                        <i><small class="help-block">(@lang("lang_v1.opening_stock"))</small></i>
-                    @endif
-                    '
-                )
+                ->addColumn("payment_methods", function ($row) use (
+                    $payment_types
+                ) {
+                    $methods = array_unique(
+                        $row->transaction->payment_lines->pluck("method")->toArray()
+                    );
+                    $count = count($methods);
+                    $payment_method = "";
+                    if ($count == 1) {
+                        $payment_method = $payment_types[$methods[0]];
+                    } elseif ($count > 1) {
+                        $payment_method = __("lang_v1.checkout_multi_pay");
+                    }
+
+                    return $payment_method;
+                })
                 ->editColumn(
                     "customer",
                     '@if(!empty($supplier_business_name)) {{$supplier_business_name}},<br>@endif {{$customer}}'
                 )
                 ->rawColumns([
                     "invoice_no",
-                    "purchase_quantity",
-                    "ref_no",
+                    "sell_qty",
+                    "unit_price",
+                    "discount_amount",
+                    "tax",
+                    "unit_sale_price",
+                    "subtotal",
                     "customer",
                 ])
                 ->make(true);

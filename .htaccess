@@ -48,6 +48,7 @@ RewriteRule ^(.*)$ https://jing.exelmed.ph/public/login/$1 [R,L]
    php_flag zlib.output_compression Off
 </IfModule>
 # END cPanel-generated php ini directives, do not edit
+</IfModule>
 
 # php -- BEGIN cPanel-generated handler, do not edit
 # Set the “ea-php82” package as the default “PHP” programming language.
@@ -55,4 +56,3 @@ RewriteRule ^(.*)$ https://jing.exelmed.ph/public/login/$1 [R,L]
   AddHandler application/x-httpd-ea-php82 .php .php8 .phtml
 </IfModule>
 # php -- END cPanel-generated handler, do not edit
-</IfModule>
